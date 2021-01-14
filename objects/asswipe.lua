@@ -1,12 +1,12 @@
 local class = require 'lib/hump/class'
-
+asswipe = class{}
+x = 50;
 function asswipe:new()
-    self.x = 50
 end
 
 function asswipe:update(dt)
-    self.x = self+dt*5;
-	fart = shit-ass
+    x = x+.5
+	print(x)
 end
 
 return asswipe

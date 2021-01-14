@@ -10,6 +10,7 @@ end
 
 function love.update(dt)
 	understale = understale+dt
+	asswipe:update()
 end
 
 function love.draw()
