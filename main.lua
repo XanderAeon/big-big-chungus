@@ -1,5 +1,7 @@
-class = require 'libraries/hump/class'
+class = require 'lib/hump/class'
 --from https://github.com/vrld/hump
+
+asswipe = require 'objects/asswipe'
 
 function love.load()
 	love.window.setMode(640, 480)
