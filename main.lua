@@ -1,95 +1,68 @@
-class = require 'lib/hump/class'
---from https://github.com/vrld/hump
 
 asswipe = require 'objects/asswipe'
+local mediator = {}
+mediator.x = 320
+mediator.y = 240
+mediator.sprite_index = love.graphics.newImage("sprites/me.png")
+bulsprite = love.graphics.newImage("sprites/booletwo.png")
 bullets = {}
-bulletcount = 0
-count = 0
-ecks = 0
-whai = 0
-love.window.setTitle("shihou")
---pattern = require 'patterns/attack'
 
-global = {}
-
-function global:bulletmake(x, y, direction, speed)
-	bullets[bulletcount] = assert(love.filesystem.load("objects/bullet.lua"))()
-	bullets[bulletcount]:new()
-	bullets[bulletcount].x = x
-	bullets[bulletcount].y = y
-	bullets[bulletcount].direction = direction
-	bullets[bulletcount].speed = speed
-	bulletcount = bulletcount+1
-end
+local gamestate = "startzone"
 
 
 function love.load()
-	love.window.setMode(640, 480)
-	understale = 0
+	winwidth = 640
+	winheight = 480
+	love.window.setMode(winwidth, winheight, {vsync = true})
+	love.graphics.setBackgroundColor(.2, .4, .4)
 end
 
 function love.update(dt)
 	dt = love.timer.getDelta()*200
+	love.window.setTitle("Omnidirectional")
 	asswipe:update(dt)
-	--pattern:update(dt)
-	if (love.keyboard.isDown("z")) then
-		bullet:new()
-	end
-	
-	if bulletcount >= 1000 then
-		bulletcount = 0
-	end
-	for i=0, count, 1 do
-		if i < #bullets then
-			bullets[i]:update(dt)
-		end
-	end
-	
-	count = count+dt
-	
+	bulupdate(dt)
 end
 
 function love.draw()
-	--love.graphics.print(math.floor(understale), 320, 240)
-	asswipe:draw()
-	
-	for i=0, count, 1 do
-		if i < #bullets then
-			bullets[i]:draw()
-		end
+	if gamestate == "startzone" then
+		love.graphics.draw(mediator.sprite_index, mediator.x, mediator.y, 0, 1, 1, 16, 16, 0, 0)
+		love.graphics.printf("AMONG US", 0, winheight/2+50, winwidth, 'center')
 	end
-	--pattern:draw()
+	for index, bullet in ipairs(bullets) do
+		love.graphics.draw(bullet.img, bullet.x, bullet.y, 0, 1, 1, 10, 10, 0, 0)
+	 end
+	asswipe:draw()
 end
 
 
-
-
-
-bullet = {}
-function bullet:new(ecks, whai, dir, spd)
-	bullets[bulletcount] = self
-	self.x = ecks or 320
-	self.y = whai or 100
-	self.direction = dir or 0
-	self.hspd = spd or 5
-	self.vspd = spd or 5
-	sprite_index = love.graphics.newImage("sprites/boolet.png")
-	bulletcount = bulletcount+1
-end
-
-function bullet:update(dt)
-	self.x = self.x+self.hspd*dt
-	self.y = self.y+self.vspd*dt
-end
-function bullet:draw(dt)
-	love.graphics.draw(sprite_index, self.x, self.y, (self.direction-90)*.0175, 1, 1, 16, 16, 0, 0)
-end
-
-
-function dir2hv(angle, spd)
-	hspd = math.cos(angle*.0175)*spd;
-	vspd = math.sin(angle*.0175)*spd;
+function get(value)
+	return value
 end
 function boolnum(value)
   return value and 1 or 0
+end
+
+function makebul(ecks, whai, hespd, vespd)
+	bullet = {x = ecks, y = whai, width = 16, height=16, hspd=hespd, vspd=vespd, img = bulsprite}
+    table.insert(bullets, bullet)
+end
+function bulupdate(dt)
+	for index, bullet in ipairs(bullets) do
+    bullet.x = bullet.x+bullet.hspd
+	bullet.y = bullet.y+bullet.vspd
+    if bullet.x > winwidth or bullet.x < 0 or bullet.y > winheight or bullet.y < 0 then
+      table.remove(bullet, index)
+    end
+  end
+end
+
+function clamp(val, minimum, maximum)
+	if val > maximum then
+		val = maximum
+	end
+	if val < minimum then
+		val = minimum
+	end
+	return val
 end
