@@ -6,9 +6,7 @@ function pattern:new()
 end
 
 function pattern:update(dt)
-	bullets[bulletcount] = assert(love.filesystem.load("objects/bullet.lua"))()
-	bullets[bulletcount].speed = 5
-	bullets[bulletcount]:new()
+	global:bulletmake(320, 100, 225, 2)
 	--bullets[bulletcount].money = "dolla"
 	--print(bullets[bulletcount].money)
 	--b_direction = b_direction+72

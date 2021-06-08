@@ -1,7 +1,7 @@
 local class = require 'lib/hump/class'
 local bullet = class{}
-local x = 320
-local y = 100
+local x = 420
+local y = 200
 
 local hspd = -.1
 local vspd = .1

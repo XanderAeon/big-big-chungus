@@ -8,25 +8,18 @@ count = 0
 ecks = 0
 whai = 0
 love.window.setTitle("shihou")
-pattern = require 'patterns/attack'
-
---"i wish i had 'with instance_create'" variables
-b_direction = 0
-b_turning = 0
-b_speed = 1
-b_addacceleration = 0
-b_multacceleration = 1
-b_changedelay = 60
-b_maxspeed = 20
-b_minspeed = 0
-
-
---danmathu = require 'scripts/dir2hv'
+--pattern = require 'patterns/attack'
 
 global = {}
 
 function global:bulletmake(x, y, direction, speed)
-
+	bullets[bulletcount] = assert(love.filesystem.load("objects/bullet.lua"))()
+	bullets[bulletcount]:new()
+	bullets[bulletcount].x = x
+	bullets[bulletcount].y = y
+	bullets[bulletcount].direction = direction
+	bullets[bulletcount].speed = speed
+	bulletcount = bulletcount+1
 end
 
 
@@ -38,8 +31,10 @@ end
 function love.update(dt)
 	dt = love.timer.getDelta()*200
 	asswipe:update(dt)
-	--bowap()
-	pattern:update(dt)
+	--pattern:update(dt)
+	if (love.keyboard.isDown("z")) then
+		bullet:new()
+	end
 	
 	if bulletcount >= 1000 then
 		bulletcount = 0
@@ -63,15 +58,38 @@ function love.draw()
 			bullets[i]:draw()
 		end
 	end
-	pattern:draw()
+	--pattern:draw()
 end
 
-function bowap()
-	--for i=0, 5, 1 do
-		bullets[bulletcount] = assert(love.filesystem.load("objects/bullet.lua"))()
-		bullets[bulletcount]:new()
-		bulletcount = bulletcount+1
-		dirmod = dirmod+72
-	--end
-	--dirmod = 0
+
+
+
+
+bullet = {}
+function bullet:new(ecks, whai, dir, spd)
+	bullets[bulletcount] = self
+	self.x = ecks or 320
+	self.y = whai or 100
+	self.direction = dir or 0
+	self.hspd = spd or 5
+	self.vspd = spd or 5
+	sprite_index = love.graphics.newImage("sprites/boolet.png")
+	bulletcount = bulletcount+1
+end
+
+function bullet:update(dt)
+	self.x = self.x+self.hspd*dt
+	self.y = self.y+self.vspd*dt
+end
+function bullet:draw(dt)
+	love.graphics.draw(sprite_index, self.x, self.y, (self.direction-90)*.0175, 1, 1, 16, 16, 0, 0)
+end
+
+
+function dir2hv(angle, spd)
+	hspd = math.cos(angle*.0175)*spd;
+	vspd = math.sin(angle*.0175)*spd;
+end
+function boolnum(value)
+  return value and 1 or 0
 end
