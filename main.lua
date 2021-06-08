@@ -1,5 +1,13 @@
+-- 1 / Ticks Per Second
+local TICK_RATE = 1 / 60
 
+-- How many Frames are allowed to be skipped at once due to lag (no "spiral of death")
+local MAX_FRAME_SKIP = 1
 asswipe = require 'objects/asswipe'
+pattern = require 'patterns/bowap'
+require 'objects/bulgeneral'
+require 'objects/shotgeneral'
+require 'scripts/mathscripts'
 local mediator = {}
 mediator.x = 320
 mediator.y = 240
@@ -9,19 +17,64 @@ bullets = {}
 
 local gamestate = "startzone"
 
+function love.run()
+	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
+ 
+    -- We don't want the first frame's dt to include time taken by love.load.
+    if love.timer then love.timer.step() end
+
+    local lag = 0.0
+
+    -- Main loop time.
+    return function()
+        -- Process events.
+        if love.event then
+            love.event.pump()
+            for name, a,b,c,d,e,f in love.event.poll() do
+                if name == "quit" then
+                    if not love.quit or not love.quit() then
+                        return a or 0
+                    end
+                end
+                love.handlers[name](a,b,c,d,e,f)
+            end
+        end
+
+        -- Cap number of Frames that can be skipped so lag doesn't accumulate
+        if love.timer then lag = math.min(lag + love.timer.step(), TICK_RATE * MAX_FRAME_SKIP) end
+
+        while lag >= TICK_RATE do
+            if love.update then love.update(TICK_RATE) end
+            lag = lag - TICK_RATE
+        end
+
+        if love.graphics and love.graphics.isActive() then
+            love.graphics.origin()
+            love.graphics.clear(love.graphics.getBackgroundColor())
+ 
+            if love.draw then love.draw() end
+            love.graphics.present()
+        end
+
+        -- Even though we limit tick rate and not frame rate, we might want to cap framerate at 1000 frame rate as mentioned https://love2d.org/forums/viewtopic.php?f=4&t=76998&p=198629&hilit=love.timer.sleep#p160881
+        if love.timer then love.timer.sleep(0.001) end
+    end
+end
 
 function love.load()
 	winwidth = 640
 	winheight = 480
 	love.window.setMode(winwidth, winheight, {vsync = true})
 	love.graphics.setBackgroundColor(.2, .4, .4)
+	
 end
 
-function love.update(dt)
-	dt = love.timer.getDelta()*200
+function love.update()
 	love.window.setTitle("Omnidirectional")
-	asswipe:update(dt)
-	bulupdate(dt)
+	asswipe:update()
+	pattern:update()
+	bulupdate()
+	shotupdate()
 end
 
 function love.draw()
@@ -29,40 +82,10 @@ function love.draw()
 		love.graphics.draw(mediator.sprite_index, mediator.x, mediator.y, 0, 1, 1, 16, 16, 0, 0)
 		love.graphics.printf("AMONG US", 0, winheight/2+50, winwidth, 'center')
 	end
-	for index, bullet in ipairs(bullets) do
-		love.graphics.draw(bullet.img, bullet.x, bullet.y, 0, 1, 1, 10, 10, 0, 0)
-	 end
+	buldraw()
+	shotdraw()
 	asswipe:draw()
+	pattern:draw()
 end
 
 
-function get(value)
-	return value
-end
-function boolnum(value)
-  return value and 1 or 0
-end
-
-function makebul(ecks, whai, hespd, vespd)
-	bullet = {x = ecks, y = whai, width = 16, height=16, hspd=hespd, vspd=vespd, img = bulsprite}
-    table.insert(bullets, bullet)
-end
-function bulupdate(dt)
-	for index, bullet in ipairs(bullets) do
-    bullet.x = bullet.x+bullet.hspd
-	bullet.y = bullet.y+bullet.vspd
-    if bullet.x > winwidth or bullet.x < 0 or bullet.y > winheight or bullet.y < 0 then
-      table.remove(bullet, index)
-    end
-  end
-end
-
-function clamp(val, minimum, maximum)
-	if val > maximum then
-		val = maximum
-	end
-	if val < minimum then
-		val = minimum
-	end
-	return val
-end

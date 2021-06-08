@@ -57,9 +57,6 @@ function boolnum(value)
 end
 
 
-function dir2hv(angle, spd)
-	hspd = math.cos(angle*.0175)*spd;
-	vspd = math.sin(angle*.0175)*spd;
-end
+
 
 return bullet
